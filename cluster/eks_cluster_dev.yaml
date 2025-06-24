@@ -1,0 +1,47 @@
+# Corrected EKS Cluster Manifest for eksctl
+# Use with: eksctl create cluster -f <filename.yaml>
+
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  # FIX: Corrected the name to be a single string and changed the region
+  name: razos-eks-cluster-dev
+  region: us-east-1
+  # NOTE: Updated to a recent, stable version of Kubernetes
+  version: "1.30"
+
+# This section defines the VPC and Subnets that eksctl will use
+vpc:
+  id: "vpc-08a02321505b91038" # FIX: Used your actual VPC ID
+  subnets:
+    # Subnets for internet-facing Load Balancers.
+    # Must be in at least two different Availability Zones.
+    public:
+      us-east-1a:
+        id: "subnet-08ea974ddd8ab2c72"
+      us-east-1b:
+        id: "subnet-0df20f9da1415d533"
+
+    # Subnets where the EC2 worker nodes will be placed.
+    # Best practice is to use private subnets (with a NAT Gateway for internet access).
+    private:
+      us-east-1c:
+        id: "subnet-0f0bd22bc22e33368"
+      us-east-1d:
+        id: "subnet-0aba78c4b07d9d549"
+
+# This section defines the group of EC2 instances that will be your worker nodes
+managedNodeGroups:
+  # FIX: Corrected YAML syntax for the node group definition
+  - name: general-workers
+    instanceType: t3.small
+    desiredCapacity: 3
+    # Optional: Set a min and max size for auto-scaling
+    # minSize: 2
+    # maxSize: 5
+    volumeSize: 70
+    # This ensures your nodes do not get public IP addresses, which is a security best practice.
+    privateNetworking: true
+    labels:
+      role: general
